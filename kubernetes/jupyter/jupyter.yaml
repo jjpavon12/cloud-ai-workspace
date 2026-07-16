@@ -89,7 +89,7 @@ metadata:
   name: jupyter
   namespace: jupyter
 spec:
-  type: NodePort
+  type: ClusterIP
 
   selector:
     app: jupyter
@@ -98,4 +98,3 @@ spec:
     - name: http
       port: 8888
       targetPort: 8888
-      nodePort: 30080
