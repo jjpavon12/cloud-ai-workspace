@@ -1,8 +1,18 @@
 #!/bin/bash
 set -e
+if systemctl is-active --quiet k3s; then
+    echo "k3s is already installed and running."
+else
+    echo "Installing k3s..."
+    curl -sfL https://get.k3s.io | sh -
+fi
 
-echo "Installing k3s..."
-curl -sfL https://get.k3s.io | sh -
+echo "Waiting for Kubernetes node..."
+kubectl wait \
+  --for=condition=Ready \
+  node \
+  --all \
+  --timeout=180s
 
 echo "Configuring kubectl..."
 mkdir -p "$HOME/.kube"
