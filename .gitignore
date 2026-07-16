@@ -1,0 +1,29 @@
+# Secrets and credentials
+*.key
+*.pem
+*.crt
+*.token
+.env
+.env.*
+
+# Kubernetes secrets
+*-secret.yaml
+secret.yaml
+secrets/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.log
+*.tmp
