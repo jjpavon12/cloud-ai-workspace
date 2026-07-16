@@ -15,3 +15,7 @@ echo
 echo "=== JupyterLab ==="
 kubectl get pods,svc,ingress,pvc -n jupyter 2>/dev/null \
   || echo "JupyterLab is not deployed."
+
+echo
+echo "=== Remote access ==="
+echo "JupyterLab: https://jprlab.tail1a7a0b.ts.net"
