@@ -59,6 +59,9 @@ spec:
             - name: JUPYTER_ENABLE_LAB
               value: "yes"
 
+            - name: NOTEBOOK_ARGS
+              value: "--ServerApp.root_dir=/home/jovyan/work"
+
             - name: JUPYTER_TOKEN
               valueFrom:
                 secretKeyRef:

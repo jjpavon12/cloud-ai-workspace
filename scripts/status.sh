@@ -1,21 +1,45 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
 
-echo "=== Kubernetes node ==="
-kubectl get nodes
+set -euo pipefail
 
-echo
-echo "=== GPU ==="
-GPU_COUNT="$(kubectl get node \
-  -o jsonpath='{.items[0].status.allocatable.nvidia\.com/gpu}' 2>/dev/null || true)"
+NAMESPACE="jupyter"
 
-echo "Available GPUs: ${GPU_COUNT:-0}"
+echo "========================================"
+echo " Cloud AI Workspace - Estado"
+echo "========================================"
 
 echo
-echo "=== JupyterLab ==="
-kubectl get pods,svc,ingress,pvc -n jupyter 2>/dev/null \
-  || echo "JupyterLab is not deployed."
+echo "=== Nodo Kubernetes ==="
+kubectl get nodes -o wide
 
 echo
-echo "=== Remote access ==="
-echo "JupyterLab: https://jprlab.tail1a7a0b.ts.net"
+echo "=== GPU disponible ==="
+kubectl get nodes \
+  -o custom-columns="NODE:.metadata.name,GPU:.status.allocatable.nvidia\.com/gpu"
+
+echo
+echo "=== Pods ==="
+kubectl get pods -n "${NAMESPACE}" -o wide
+
+echo
+echo "=== Servicios ==="
+kubectl get services -n "${NAMESPACE}"
+
+echo
+echo "=== Ingress ==="
+kubectl get ingress -n "${NAMESPACE}"
+
+echo
+echo "=== Almacenamiento ==="
+kubectl get pvc -n "${NAMESPACE}"
+
+echo
+echo "=== Aplicaciones ==="
+echo "JupyterLab:"
+echo "  https://jprlab.tail1a7a0b.ts.net/"
+echo
+echo "VS Code:"
+echo "  https://jprlab.tail1a7a0b.ts.net/code/"
+
+echo
+echo "========================================"

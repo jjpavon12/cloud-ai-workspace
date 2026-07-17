@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: code-server-config
+  namespace: jupyter
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-server
+  namespace: jupyter
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: code-server
+
+  template:
+    metadata:
+      labels:
+        app: code-server
+
+    spec:
+      enableServiceLinks: false
+
+      securityContext:
+        fsGroup: 1000
+
+      containers:
+        - name: code-server
+          image: codercom/code-server:latest
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - --bind-addr
+            - 0.0.0.0:8080
+            - --auth
+            - password
+            - --disable-telemetry
+            - /home/coder/work
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          env:
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: code-server-auth
+                  key: password
+
+            - name: CS_DISABLE_GETTING_STARTED_OVERRIDE
+              value: "true"
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+
+          volumeMounts:
+            - name: workspace
+              mountPath: /home/coder/work
+
+            - name: config
+              mountPath: /home/coder/.config
+
+            - name: config
+              mountPath: /home/coder/.local
+              subPath: local
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+      volumes:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: jupyter-workspace
+
+        - name: config
+          persistentVolumeClaim:
+            claimName: code-server-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-server
+  namespace: jupyter
+spec:
+  type: ClusterIP
+
+  selector:
+    app: code-server
+
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
