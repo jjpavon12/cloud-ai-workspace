@@ -28,37 +28,39 @@ Actualmente la plataforma integra servicios como JupyterLab, Code Server, Ollama
 # Arquitectura
 
 ```text
-                           Portátil
+                        ┌─────────────────────────┐
+                        │ Cliente (PC / Portátil) │
+                        └────────────┬────────────┘
+                                     │
+                           Red privada Tailscale
+                                     │
+                          HTTPS (Tailscale Serve)
+                                     │
+                              Traefik Ingress
+                                     │
+        ┌────────────────────────────┼────────────────────────────┐
+        │                            │                            │
+        │                            │                            │
+┌───────────────┐          ┌────────────────┐          ┌─────────────────┐
+│   JupyterLab  │          │  Code Server   │          │ Workspace Manager│
+└───────────────┘          └───────┬────────┘          └─────────────────┘
+                                   │
+                            Continue Extension
+                                   │
+                                   ▼
+                           ┌────────────────┐
+                           │     Ollama     │
+                           └────────────────┘
+
+                 ───────────────────────────────────────
+                      Kubernetes (k3s sobre WSL2)
+                 ───────────────────────────────────────
+
+                      Persistent Volume (PVC)
                                │
-                        Red Tailscale
+                     Workspace compartido
                                │
-                     HTTPS - Tailscale Serve
-                               │
-                           Traefik
-                               │
-                  ┌────────────┴────────────┐
-                  │                         │
-           Workspace Manager          Code Server
-                  │                         │
-                  │                    Continue
-                  │                         │
-                  │                     Ollama API
-                  │                         │
-           Kubernetes API                  │
-                  │                         │
-          ┌───────┴────────┐                │
-          │                │                │
-      JupyterLab       Ollama              │
-          │                │               │
-          └────────┬───────┘               │
-                   │
-        Persistent Volume (PVC)
-                   │
-              Proyectos
-                   │
-             k3s sobre WSL2
-                   │
-          GPU NVIDIA del host
+                       GPU NVIDIA del host
 ```
 
 ---
