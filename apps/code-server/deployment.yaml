@@ -62,6 +62,12 @@ spec:
             - name: CS_DISABLE_GETTING_STARTED_OVERRIDE
               value: "true"
 
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: continue-api-keys
+                  key: OPENAI_API_KEY
+
           resources:
             requests:
               cpu: 250m

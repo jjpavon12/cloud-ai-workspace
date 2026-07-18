@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>Cloud AI Workspace</title>
+
+    <link rel="stylesheet" href="static/styles.css" />
+  </head>
+
+  <body>
+    <main class="page">
+      <header class="header">
+        <div class="brand">
+          <div class="brand-icon">AI</div>
+
+          <div>
+            <h1>Cloud AI Workspace</h1>
+            <p>Plataforma local de desarrollo y entrenamiento</p>
+          </div>
+        </div>
+
+        <button
+          id="refresh-button"
+          class="secondary-button"
+          type="button"
+        >
+          Actualizar
+        </button>
+      </header>
+
+      <div id="error-message" class="error-message hidden"></div>
+
+      <section class="main-grid">
+        <article class="card workspace-card">
+          <div class="card-heading">
+            <div>
+              <span class="eyebrow">Workspace</span>
+              <h2>Modo actual</h2>
+            </div>
+
+            <span id="mode-badge" class="mode-badge mode-unknown">
+              Cargando
+            </span>
+          </div>
+
+          <div class="mode-summary">
+            <div id="mode-icon" class="mode-icon">…</div>
+
+            <div>
+              <h3 id="mode-title">Cargando estado</h3>
+              <p id="mode-description">
+                Consultando los servicios de la plataforma.
+              </p>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button
+              id="copilot-button"
+              class="action-button copilot-button"
+              type="button"
+            >
+              Activar Copilot
+            </button>
+
+            <button
+              id="train-button"
+              class="action-button train-button"
+              type="button"
+            >
+              Activar Train
+            </button>
+
+            <button
+              id="stop-button"
+              class="action-button stop-button"
+              type="button"
+            >
+              Detener GPU
+            </button>
+          </div>
+
+          <div id="transition-message" class="transition hidden">
+            <span class="spinner"></span>
+
+            <span>
+              Cambiando el workspace. Primero se liberará la GPU y
+              después se iniciará el servicio correspondiente.
+            </span>
+          </div>
+        </article>
+
+        <article class="card information-card">
+          <span class="eyebrow">Configuración</span>
+          <h2>Entorno de IA</h2>
+
+          <dl>
+            <div>
+              <dt>GPU</dt>
+              <dd>RTX 2070 SUPER</dd>
+            </div>
+
+            <div>
+              <dt>Modelo</dt>
+              <dd>Qwen2.5-Coder 7B</dd>
+            </div>
+
+            <div>
+              <dt>Contexto</dt>
+              <dd>8192 tokens</dd>
+            </div>
+
+            <div>
+              <dt>Acceso</dt>
+              <dd>Tailnet HTTPS</dd>
+            </div>
+
+            <div>
+              <dt>Orquestación</dt>
+              <dd>Kubernetes</dd>
+            </div>
+          </dl>
+        </article>
+      </section>
+
+      <section class="services-section">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Servicios</span>
+            <h2>Aplicaciones de la plataforma</h2>
+          </div>
+
+          <span class="automatic-update">
+            Actualización automática cada 5 segundos
+          </span>
+        </div>
+
+        <div class="services-grid">
+          <article class="card service-card">
+            <div class="service-header">
+              <div>
+                <h3>Code Server</h3>
+                <p>Entorno de desarrollo basado en VS Code.</p>
+              </div>
+
+              <span
+                id="code-server-status"
+                class="service-status status-error"
+              >
+                <span class="status-dot"></span>
+                Desconocido
+              </span>
+            </div>
+
+            <a class="service-link" href="/code/">
+              Abrir VS Code
+            </a>
+          </article>
+
+          <article class="card service-card">
+            <div class="service-header">
+              <div>
+                <h3>Jupyter</h3>
+                <p>Notebooks y entrenamientos con GPU.</p>
+              </div>
+
+              <span
+                id="jupyter-status"
+                class="service-status status-error"
+              >
+                <span class="status-dot"></span>
+                Desconocido
+              </span>
+            </div>
+
+            <a
+              id="jupyter-link"
+              class="service-link disabled"
+              href="/"
+            >
+              Abrir Jupyter
+            </a>
+          </article>
+
+          <article class="card service-card">
+            <div class="service-header">
+              <div>
+                <h3>Ollama</h3>
+                <p>Servidor local para el asistente de programación.</p>
+              </div>
+
+              <span
+                id="ollama-status"
+                class="service-status status-error"
+              >
+                <span class="status-dot"></span>
+                Desconocido
+              </span>
+            </div>
+
+            <div class="service-information">
+              Disponible desde Continue en Code Server
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <footer>
+        Cloud AI Workspace · Acceso privado mediante Tailnet
+      </footer>
+    </main>
+
+    <script src="static/app.js"></script>
+  </body>
+</html>

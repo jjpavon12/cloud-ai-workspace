@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workspace-system
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workspace-manager
+  namespace: workspace-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: workspace-manager-ollama
+  namespace: ai
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - deployments/scale
+    verbs:
+      - get
+      - patch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-manager-ollama
+  namespace: ai
+subjects:
+  - kind: ServiceAccount
+    name: workspace-manager
+    namespace: workspace-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: workspace-manager-ollama
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: workspace-manager-jupyter
+  namespace: jupyter
+rules:
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - deployments/scale
+    verbs:
+      - get
+      - patch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workspace-manager-jupyter
+  namespace: jupyter
+subjects:
+  - kind: ServiceAccount
+    name: workspace-manager
+    namespace: workspace-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: workspace-manager-jupyter

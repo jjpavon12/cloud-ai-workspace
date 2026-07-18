@@ -27,3 +27,12 @@ Thumbs.db
 # Temporary files
 *.log
 *.tmp
+
+# Logs
+*.log
+
+# Kubernetes
+*.tmp
+
+# Mac
+.DS_Store

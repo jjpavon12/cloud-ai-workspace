@@ -1,0 +1,68 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: workspace-dashboard-strip-prefix
+  namespace: workspace-system
+spec:
+  stripPrefix:
+    prefixes:
+      - /workspace
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: workspace-api-strip-prefix
+  namespace: workspace-system
+spec:
+  stripPrefix:
+    prefixes:
+      - /workspace-api
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: workspace-dashboard
+  namespace: workspace-system
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: >-
+      workspace-system-workspace-dashboard-strip-prefix@kubernetescrd
+spec:
+  ingressClassName: traefik
+
+  rules:
+    - host: jprlab.tail1a7a0b.ts.net
+      http:
+        paths:
+          - path: /workspace
+            pathType: Prefix
+            backend:
+              service:
+                name: workspace-manager
+                port:
+                  number: 8000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: workspace-api
+  namespace: workspace-system
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: >-
+      workspace-system-workspace-api-strip-prefix@kubernetescrd
+spec:
+  ingressClassName: traefik
+
+  rules:
+    - host: jprlab.tail1a7a0b.ts.net
+      http:
+        paths:
+          - path: /workspace-api
+            pathType: Prefix
+            backend:
+              service:
+                name: workspace-manager
+                port:
+                  number: 8000
