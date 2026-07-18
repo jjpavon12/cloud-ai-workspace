@@ -1,286 +1,264 @@
 # Cloud AI Workspace
 
-## Descripción
+Cloud AI Workspace es una plataforma personal orientada al desarrollo de aplicaciones de Inteligencia Artificial sobre Kubernetes.
 
-Cloud AI Workspace es una plataforma personal de desarrollo Cloud e IA desplegada
-sobre Kubernetes en un equipo local con GPU NVIDIA.
+El objetivo del proyecto es disponer de un entorno de trabajo accesible desde cualquier lugar que combine herramientas de desarrollo, entrenamiento de modelos y asistentes de IA locales utilizando la capacidad de cómputo de un equipo personal con GPU NVIDIA.
 
-La plataforma permite acceder remotamente a entornos de desarrollo mediante el
-navegador, utilizando la capacidad de procesamiento y la GPU del equipo anfitrión.
+Actualmente la plataforma integra servicios como JupyterLab, Code Server, Ollama y un Workspace Manager desarrollado en FastAPI para gestionar los distintos modos de trabajo.
 
-Actualmente incluye:
+---
 
-- JupyterLab para experimentación, notebooks y entrenamiento de modelos.
-- code-server para desarrollo de proyectos desde una interfaz similar a VS Code.
-- Almacenamiento persistente compartido entre ambos entornos.
-- Soporte para GPU NVIDIA dentro de Kubernetes.
-- Traefik como controlador Ingress.
-- Acceso remoto privado y HTTPS mediante Tailscale.
+# Características
 
-## Arquitectura
+- Kubernetes ligero mediante k3s.
+- GPU NVIDIA integrada en Kubernetes.
+- JupyterLab para entrenamiento y experimentación.
+- Code Server accesible desde el navegador.
+- Ollama para ejecutar LLMs de forma local.
+- Continue como asistente de programación conectado a Ollama.
+- Workspace Manager para gestionar los distintos modos de trabajo.
+- Dashboard web desarrollado con FastAPI.
+- Almacenamiento persistente compartido.
+- Acceso remoto privado mediante Tailscale.
+- HTTPS mediante Tailscale Serve.
+- Toda la infraestructura definida mediante manifiestos de Kubernetes.
 
-```text
-                         Portátil
-                            │
-                     Red Tailscale
-                            │
-                  HTTPS - Tailscale Serve
-                            │
-                         Traefik
-                 ┌──────────┴──────────┐
-                 │                     │
-            JupyterLab            code-server
-                 │                     │
-                 └──────────┬──────────┘
-                            │
-                 PersistentVolumeClaim
-                            │
-                       Proyectos
-                            │
-                    k3s sobre WSL2
-                            │
-                   GPU NVIDIA del host
+---
 
-## Características actuales
-
-* Kubernetes ligero mediante k3s.
-* Despliegue sobre Ubuntu 24.04 en WSL2.
-* Integración de una GPU NVIDIA con Kubernetes.
-* NVIDIA Container Toolkit y NVIDIA Device Plugin.
-* JupyterLab con soporte CUDA y PyTorch.
-* Volumen persistente para conservar notebooks y proyectos.
-* Acceso mediante Traefik Ingress.
-* Servicio interno de tipo `ClusterIP`.
-* Acceso remoto privado y cifrado mediante Tailscale.
-* HTTPS proporcionado por Tailscale Serve.
-* Sin puertos expuestos directamente a Internet.
-
-## Tecnologías
-
-* Windows 11
-* WSL2
-* Ubuntu 24.04
-* k3s
-* Kubernetes
-* containerd
-* NVIDIA Container Toolkit
-* NVIDIA Device Plugin
-* Traefik
-* JupyterLab
-* PyTorch
-* Tailscale
-
-## Estructura del repositorio
+# Arquitectura
 
 ```text
-.
-├── apps/
-│   └── jupyter/
-│       ├── deployment.yaml
-│       └── ingress.yaml
-│
-├── infrastructure/
-│   ├── gpu/
-│   │   ├── nvidia-device-plugin.yaml
-│   │   └── gpu-test.yaml
-│   └── k3s/
-│       └── install-k3s.sh
-│
-├── scripts/
-├── docs/
-├── .gitignore
-└── README.md
+                           Portátil
+                               │
+                        Red Tailscale
+                               │
+                     HTTPS - Tailscale Serve
+                               │
+                           Traefik
+                               │
+                  ┌────────────┴────────────┐
+                  │                         │
+           Workspace Manager          Code Server
+                  │                         │
+                  │                    Continue
+                  │                         │
+                  │                     Ollama API
+                  │                         │
+           Kubernetes API                  │
+                  │                         │
+          ┌───────┴────────┐                │
+          │                │                │
+      JupyterLab       Ollama              │
+          │                │               │
+          └────────┬───────┘               │
+                   │
+        Persistent Volume (PVC)
+                   │
+              Proyectos
+                   │
+             k3s sobre WSL2
+                   │
+          GPU NVIDIA del host
 ```
 
-## Aplicaciones
+---
 
-### JupyterLab
+# Servicios
 
-Entorno orientado a experimentación, análisis de datos y entrenamiento de
-modelos mediante notebooks.
+## Workspace Manager
 
-El directorio de trabajo está montado en:
+Aplicación desarrollada en FastAPI que centraliza la gestión de la plataforma.
+
+Actualmente permite:
+
+- visualizar el estado del workspace;
+- cambiar entre distintos modos de trabajo;
+- iniciar y detener servicios;
+- servir el dashboard web.
+
+---
+
+## JupyterLab
+
+Entorno destinado a:
+
+- entrenamiento de modelos;
+- notebooks;
+- análisis de datos;
+- experimentación.
+
+Workspace:
 
 ```text
 /home/jovyan/work
 ```
 
-### Code-server
+---
 
-Entorno de desarrollo accesible desde el navegador, basado en Visual Studio Code.
+## Code Server
 
-El workspace compartido está montado en:
+Entorno de desarrollo basado en Visual Studio Code accesible desde cualquier navegador.
+
+Incluye soporte para:
+
+- Python
+- Git
+- Continue
+- desarrollo remoto
+
+Workspace:
 
 ```text
 /home/coder/work
 ```
 
-Ambos directorios apuntan al mismo volumen persistente, por lo que los proyectos
-creados en JupyterLab pueden abrirse y modificarse desde code-server y viceversa.
+---
 
-## Despliegue
+## Ollama
 
-Para desplegar la plataforma completa:
+Servidor de modelos de lenguaje ejecutándose dentro del clúster Kubernetes.
 
-```bash
-git clone git@github.com:jjpavon12/cloud-ai-workspace.git
-cd cloud-ai-workspace
-chmod +x scripts/*.sh
-chmod +x infrastructure/k3s/*.sh
-chmod +x infrastructure/gpu/*.sh
-./scripts/install.sh
-```
-Para consultar el estado:
-```bash
-./scripts/status.sh
-```
+Actualmente utilizado por:
 
-### `infrastructure`
+- Continue
+- futuras aplicaciones IA de la plataforma
 
-Contiene la configuración necesaria para preparar la plataforma base:
+---
 
-* instalación de k3s;
-* runtime de NVIDIA;
-* NVIDIA Device Plugin;
-* pruebas de acceso a la GPU.
+## Continue
 
-### `scripts`
+Asistente de programación integrado en Code Server y conectado a Ollama para disponer de un copiloto completamente local.
 
-Contendrá scripts para automatizar la instalación, actualización, comprobación y eliminación de la plataforma.
+---
 
-### `docs`
+# Tecnologías
 
-Contendrá documentación técnica, diagramas de arquitectura, decisiones de diseño y resolución de problemas.
+- Windows 11
+- WSL2
+- Ubuntu 24.04
+- Kubernetes
+- k3s
+- containerd
+- NVIDIA Container Toolkit
+- NVIDIA Device Plugin
+- Traefik
+- FastAPI
+- JupyterLab
+- Code Server
+- Ollama
+- Continue
+- PyTorch
+- Tailscale
 
-## Estado actual
+---
 
-La primera versión funcional permite:
-
-1. Acceder desde un portátil a la torre mediante Tailscale.
-2. Entrar en JupyterLab desde una URL HTTPS privada.
-3. Ejecutar notebooks dentro de Kubernetes.
-4. Utilizar la GPU NVIDIA desde PyTorch.
-5. Conservar los archivos mediante un volumen persistente.
-6. Entrar en Code-Server desde una URL HTTPS privada.
-
-Ejemplo de comprobación de GPU:
-
-```python
-import torch
-
-print("CUDA disponible:", torch.cuda.is_available())
-
-if torch.cuda.is_available():
-    print("GPU:", torch.cuda.get_device_name(0))
-```
-
-Resultado esperado:
+# Estructura del repositorio
 
 ```text
-CUDA disponible: True
-GPU: NVIDIA GeForce RTX 2070 SUPER
+.
+├── apps/
+│   ├── code-server/
+│   ├── jupyter/
+│   ├── ollama/
+│   └── workspace-manager/
+│
+├── infrastructure/
+│   ├── gpu/
+│   └── k3s/
+│
+├── scripts/
+│
+├── docs/
+│
+├── .gitignore
+└── README.md
 ```
 
-## Despliegue actual
+---
 
-### Instalar k3s
+# Acceso remoto
 
-```bash
-./infrastructure/k3s/install-k3s.sh
-```
+La plataforma únicamente es accesible desde dispositivos pertenecientes a la red privada de Tailscale.
 
-### Instalar NVIDIA Device Plugin
+Las aplicaciones se publican mediante HTTPS utilizando Tailscale Serve.
 
-```bash
-kubectl apply \
-  -f infrastructure/gpu/nvidia-device-plugin.yaml
-```
+Actualmente se exponen:
 
-### Comprobar acceso a la GPU
-
-```bash
-kubectl apply \
-  -f infrastructure/gpu/gpu-test.yaml
-
-kubectl logs gpu-test
-kubectl delete pod gpu-test
-```
-
-### Crear el namespace de Jupyter
-
-```bash
-kubectl create namespace jupyter
-```
-
-### Crear el token de acceso
-
-```bash
-JUPYTER_TOKEN=$(openssl rand -hex 16)
-
-kubectl create secret generic jupyter-auth \
-  --namespace jupyter \
-  --from-literal=token="$JUPYTER_TOKEN"
-```
-
-### Desplegar JupyterLab
-
-```bash
-kubectl apply -f apps/jupyter/deployment.yaml
-kubectl apply -f apps/jupyter/ingress.yaml
-```
-
-### Comprobar el despliegue
-
-```bash
-kubectl get pods,svc,ingress,pvc -n jupyter
-```
-
-## Acceso remoto
-
-El acceso remoto se realiza mediante Tailscale Serve y solo está disponible para los dispositivos autorizados dentro de la red privada de Tailscale.
-
-La URL utilizada actualmente tiene el siguiente formato:
-
-```text
-https://jprlab.<tailnet>.ts.net
-```
-
-Las credenciales y secretos utilizados para acceder a la plataforma no se almacenan en este repositorio.
-
-La plataforma se expone únicamente dentro de la red privada de Tailscale.
-
-| Aplicación | Ruta |
-|---|---|
+| Servicio | Ruta |
+|----------|------|
 | JupyterLab | `/` |
-| code-server | `/code/` |
+| Code Server | `/code/` |
+| Workspace Manager | `/workspace/` |
 
-Las credenciales se almacenan como Secrets de Kubernetes y no se incluyen en
-el repositorio.
+No existe ninguna aplicación expuesta directamente a Internet.
 
-## Próximas mejoras
+---
 
-### Roadmap
+# Estado actual
 
-- [x] k3s sobre WSL2
-- [x] Soporte para GPU NVIDIA
-- [x] JupyterLab
+Actualmente la plataforma permite:
+
+- Ejecutar Kubernetes con soporte GPU.
+- Entrenar modelos desde JupyterLab.
+- Desarrollar aplicaciones desde Code Server.
+- Utilizar asistentes de programación locales mediante Continue.
+- Ejecutar modelos LLM con Ollama.
+- Compartir el mismo workspace entre Jupyter y Code Server.
+- Gestionar el entorno desde un dashboard web.
+- Acceder de forma segura desde cualquier lugar mediante Tailscale.
+
+---
+
+# Roadmap
+
+## Infraestructura
+
+- [x] k3s
+- [x] GPU NVIDIA
 - [x] Almacenamiento persistente
-- [x] Acceso remoto mediante Tailscale
-- [x] code-server
-- [ ] Ollama
-- [ ] Chatbot web local
-- [ ] Copiloto de programación conectado a Ollama
-- [ ] MLflow
-- [ ] Prometheus y Grafana
-- [ ] CI/CD con GitHub Actions
+- [x] Traefik
+- [x] Tailscale
 
-## Seguridad
+## Entornos de trabajo
 
-La plataforma no expone directamente las aplicaciones a Internet.
+- [x] JupyterLab
+- [x] Code Server
+- [x] Continue
 
-El acceso se realiza mediante una red privada de Tailscale y HTTPS. Los tokens, claves y otros secretos deben crearse localmente y nunca almacenarse en Git.
+## Inteligencia Artificial
 
-## Licencia
+- [x] Ollama
+- [x] Workspace Manager
+- [x] Dashboard web
+- [ ] Gestión automática de modelos
+- [ ] Integración con MLflow
+- [ ] Catálogo de modelos
+- [ ] Gestión de experimentos
 
-Este proyecto se desarrolla con fines educativos y como laboratorio personal de Cloud, Kubernetes e inteligencia artificial.
+## Observabilidad
 
+- [ ] Prometheus
+- [ ] Grafana
+- [ ] Monitorización de GPU
+
+## Automatización
+
+- [ ] GitHub Actions
+- [ ] Despliegue automático
+- [ ] Configuración automática de Continue
+
+---
+
+# Seguridad
+
+- No existen servicios expuestos directamente a Internet.
+- Todo el acceso se realiza mediante la red privada de Tailscale.
+- HTTPS proporcionado por Tailscale Serve.
+- Los secretos se almacenan mediante Kubernetes Secrets.
+- Ninguna credencial se almacena en el repositorio.
+
+---
+
+# Licencia
+
+Proyecto desarrollado con fines educativos y como laboratorio personal para aprender Kubernetes, Cloud Computing e Inteligencia Artificial.
